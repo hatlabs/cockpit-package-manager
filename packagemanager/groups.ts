@@ -1,0 +1,258 @@
+/*
+ * PackageKit Group definitions
+ * Maps PackageKit group enums to user-friendly names and descriptions
+ */
+
+export interface PackageGroup {
+    id: string;              // PackageKit group ID
+    name: string;            // Display name
+    description: string;     // Description
+    icon?: string;          // Optional icon name
+}
+
+/**
+ * PackageKit group mappings
+ * Based on PkGroupEnum from packagekit-glib2/pk-enum.h
+ */
+export const PACKAGEKIT_GROUPS: Record<string, PackageGroup> = {
+    'accessibility': {
+        id: 'accessibility',
+        name: 'Accessibility',
+        description: 'Accessibility software and assistive technologies',
+    },
+    'accessories': {
+        id: 'accessories',
+        name: 'Accessories',
+        description: 'Utility applications and tools',
+    },
+    'admin-tools': {
+        id: 'admin-tools',
+        name: 'Administration',
+        description: 'System administration and configuration tools',
+    },
+    'communication': {
+        id: 'communication',
+        name: 'Communication',
+        description: 'Communication and messaging applications',
+    },
+    'desktop-gnome': {
+        id: 'desktop-gnome',
+        name: 'GNOME Desktop',
+        description: 'GNOME desktop environment components',
+    },
+    'desktop-kde': {
+        id: 'desktop-kde',
+        name: 'KDE Desktop',
+        description: 'KDE desktop environment components',
+    },
+    'desktop-xfce': {
+        id: 'desktop-xfce',
+        name: 'XFCE Desktop',
+        description: 'XFCE desktop environment components',
+    },
+    'desktop-other': {
+        id: 'desktop-other',
+        name: 'Other Desktops',
+        description: 'Other desktop environment components',
+    },
+    'education': {
+        id: 'education',
+        name: 'Education',
+        description: 'Educational software and learning tools',
+    },
+    'fonts': {
+        id: 'fonts',
+        name: 'Fonts',
+        description: 'Font packages and typography tools',
+    },
+    'games': {
+        id: 'games',
+        name: 'Games',
+        description: 'Games and entertainment software',
+    },
+    'graphics': {
+        id: 'graphics',
+        name: 'Graphics',
+        description: 'Graphics editing and viewing applications',
+    },
+    'internet': {
+        id: 'internet',
+        name: 'Internet',
+        description: 'Web browsers and internet applications',
+    },
+    'legacy': {
+        id: 'legacy',
+        name: 'Legacy',
+        description: 'Legacy and deprecated packages',
+    },
+    'localization': {
+        id: 'localization',
+        name: 'Localization',
+        description: 'Language packs and localization files',
+    },
+    'maps': {
+        id: 'maps',
+        name: 'Maps',
+        description: 'Mapping and navigation software',
+    },
+    'multimedia': {
+        id: 'multimedia',
+        name: 'Multimedia',
+        description: 'Audio and video players and editors',
+    },
+    'network': {
+        id: 'network',
+        name: 'Network',
+        description: 'Network utilities and monitoring tools',
+    },
+    'office': {
+        id: 'office',
+        name: 'Office',
+        description: 'Office productivity applications',
+    },
+    'other': {
+        id: 'other',
+        name: 'Other',
+        description: 'Miscellaneous packages',
+    },
+    'power-management': {
+        id: 'power-management',
+        name: 'Power Management',
+        description: 'Power management and battery tools',
+    },
+    'programming': {
+        id: 'programming',
+        name: 'Programming',
+        description: 'Development tools and programming languages',
+    },
+    'publishing': {
+        id: 'publishing',
+        name: 'Publishing',
+        description: 'Desktop publishing and document preparation',
+    },
+    'repos': {
+        id: 'repos',
+        name: 'Repositories',
+        description: 'Package repository configurations',
+    },
+    'security': {
+        id: 'security',
+        name: 'Security',
+        description: 'Security tools and cryptography software',
+    },
+    'servers': {
+        id: 'servers',
+        name: 'Servers',
+        description: 'Server applications and daemons',
+    },
+    'system': {
+        id: 'system',
+        name: 'System',
+        description: 'System utilities and core components',
+    },
+    'virtualization': {
+        id: 'virtualization',
+        name: 'Virtualization',
+        description: 'Virtualization and containerization tools',
+    },
+    'science': {
+        id: 'science',
+        name: 'Science',
+        description: 'Scientific and research software',
+    },
+    'documentation': {
+        id: 'documentation',
+        name: 'Documentation',
+        description: 'Documentation and manual pages',
+    },
+    'electronics': {
+        id: 'electronics',
+        name: 'Electronics',
+        description: 'Electronics and embedded development',
+    },
+    'collections': {
+        id: 'collections',
+        name: 'Collections',
+        description: 'Package collections and meta-packages',
+    },
+    'vendor': {
+        id: 'vendor',
+        name: 'Vendor',
+        description: 'Vendor-specific packages',
+    },
+    'newest': {
+        id: 'newest',
+        name: 'Recently Updated',
+        description: 'Recently added or updated packages',
+    },
+    'unknown': {
+        id: 'unknown',
+        name: 'Uncategorized',
+        description: 'Packages without a defined category',
+    },
+};
+
+/**
+ * Get group info by ID
+ */
+export function getGroupInfo(groupId: string): PackageGroup {
+    return PACKAGEKIT_GROUPS[groupId] || PACKAGEKIT_GROUPS['unknown'];
+}
+
+/**
+ * Get all groups as array
+ */
+export function getAllGroups(): PackageGroup[] {
+    return Object.values(PACKAGEKIT_GROUPS);
+}
+
+/**
+ * Priority groups to show first (server/admin focused)
+ */
+export const PRIORITY_GROUPS = [
+    'admin-tools',
+    'servers',
+    'network',
+    'system',
+    'security',
+    'programming',
+    'virtualization',
+    'database',
+];
+
+/**
+ * Groups to hide by default (desktop-focused)
+ */
+export const HIDDEN_GROUPS = [
+    'desktop-gnome',
+    'desktop-kde',
+    'desktop-xfce',
+    'desktop-other',
+    'games',
+    'education',
+];
+
+/**
+ * Check if group should be hidden by default
+ */
+export function isGroupHidden(groupId: string): boolean {
+    return HIDDEN_GROUPS.includes(groupId);
+}
+
+/**
+ * Sort groups by priority
+ */
+export function sortGroupsByPriority(groups: PackageGroup[]): PackageGroup[] {
+    return groups.sort((a, b) => {
+        const aPriority = PRIORITY_GROUPS.indexOf(a.id);
+        const bPriority = PRIORITY_GROUPS.indexOf(b.id);
+
+        // Priority groups come first
+        if (aPriority !== -1 && bPriority === -1) return -1;
+        if (aPriority === -1 && bPriority !== -1) return 1;
+        if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+
+        // Then alphabetically
+        return a.name.localeCompare(b.name);
+    });
+}

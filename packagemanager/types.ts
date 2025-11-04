@@ -59,16 +59,16 @@ export interface PackageDetails extends PackageInfo {
     description: string;     // Full description
     size: number;            // Package size in bytes
     license?: string;        // Package license
-    group?: string;          // Package group
+    group: string;           // PackageKit group
     url?: string;            // Homepage URL
 }
 
-// Debian section information
-export interface DebianSection {
-    name: string;            // Section name (e.g., "net", "admin")
-    displayName: string;     // Human-readable name
-    description: string;     // Section description
-    packageCount: number;    // Number of packages in section
+// PackageKit group information with counts
+export interface GroupInfo {
+    id: string;              // Group ID (e.g., "network", "admin-tools")
+    name: string;            // Display name
+    description: string;     // Group description
+    packageCount: number;    // Number of packages in group
     installedCount: number;  // Number of installed packages
 }
 
@@ -105,15 +105,15 @@ export class TransactionError extends Error {
 
 // View state for navigation
 export type ViewState =
-    | { view: 'sections' }
-    | { view: 'packages'; section: string }
+    | { view: 'groups' }
+    | { view: 'packages'; group: string }
     | { view: 'details'; packageId: string }
     | { view: 'search'; query: string };
 
 // Filter options for package lists
 export interface PackageFilter {
     installed?: boolean;     // Show only installed/not installed
-    section?: string;        // Filter by section
+    group?: string;          // Filter by PackageKit group
     searchQuery?: string;    // Search query
 }
 
@@ -135,6 +135,7 @@ declare global {
         dbus: (service: string | null, options?: any) => any;
         location: any;
         file: (path: string) => any;
+        spawn: (args: string[], options?: any) => Promise<string>;
     };
 }
 
