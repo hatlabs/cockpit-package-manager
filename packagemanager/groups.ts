@@ -241,8 +241,9 @@ export function isGroupHidden(groupId: string): boolean {
 
 /**
  * Sort groups by priority
+ * Accepts any group-like object with id and name
  */
-export function sortGroupsByPriority(groups: PackageGroup[]): PackageGroup[] {
+export function sortGroupsByPriority<T extends { id: string; name: string }>(groups: T[]): T[] {
     return groups.sort((a, b) => {
         const aPriority = PRIORITY_GROUPS.indexOf(a.id);
         const bPriority = PRIORITY_GROUPS.indexOf(b.id);

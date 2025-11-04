@@ -2,81 +2,62 @@
  * Main Cockpit Package Manager component
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Page, PageSection } from '@patternfly/react-core';
 
-interface AppState {
-    loading: boolean;
-    error: string | null;
-}
+import { ViewState } from './types';
+import { GroupList } from './group-list';
+import { PackageList } from './package-list';
+import { PackageDetails } from './package-details';
 
 const PackageManager: React.FC = () => {
-    const [state, setState] = useState<AppState>({
-        loading: true,
-        error: null
-    });
+    const [viewState, setViewState] = useState<ViewState>({ view: 'groups' });
 
-    useEffect(() => {
-        // Initialize PackageKit detection
-        async function init() {
-            try {
-                // TODO: Detect PackageKit availability
-                console.log('Initializing Package Manager...');
-                setState({ loading: false, error: null });
-            } catch (error) {
-                setState({
-                    loading: false,
-                    error: error instanceof Error ? error.message : 'Failed to initialize'
-                });
-            }
-        }
-
-        init();
-    }, []);
-
-    if (state.loading) {
-        return (
-            <div className="package-manager">
-                <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
-                    <div className="pf-v6-c-spinner" role="progressbar">
-                        <span className="pf-v6-c-spinner__clipper" />
-                        <span className="pf-v6-c-spinner__lead-ball" />
-                        <span className="pf-v6-c-spinner__tail-ball" />
-                    </div>
-                    <p>Loading Package Manager...</p>
-                </div>
-            </div>
-        );
+    function handleGroupSelect(groupId: string) {
+        setViewState({ view: 'packages', group: groupId });
     }
 
-    if (state.error) {
-        return (
-            <div className="package-manager">
-                <div className="pf-v6-c-empty-state">
-                    <div className="pf-v6-c-empty-state__content">
-                        <i className="fas fa-exclamation-circle pf-v6-c-empty-state__icon" aria-hidden="true"></i>
-                        <h1 className="pf-v6-c-title pf-m-lg">Error</h1>
-                        <div className="pf-v6-c-empty-state__body">{state.error}</div>
-                    </div>
-                </div>
-            </div>
-        );
+    function handlePackageSelect(packageId: string) {
+        setViewState({ view: 'details', packageId });
+    }
+
+    function handleBackToGroups() {
+        setViewState({ view: 'groups' });
+    }
+
+    function handleBackFromDetails() {
+        // Go back to package list if we have the group context
+        if (viewState.view === 'details') {
+            // For now, just go back to groups
+            // TODO: Preserve group context for better navigation
+            setViewState({ view: 'groups' });
+        }
     }
 
     return (
-        <div className="package-manager">
-            <div className="pf-v6-c-page">
-                <main className="pf-v6-c-page__main">
-                    <section className="pf-v6-c-page__main-section">
-                        <div className="pf-v6-c-content">
-                            <h1>Package Manager</h1>
-                            <p>Cockpit Package Manager - Basic UI Skeleton</p>
-                            <p>TODO: Implement group browsing, package listing, and package details</p>
-                        </div>
-                    </section>
-                </main>
-            </div>
-        </div>
+        <Page>
+            <PageSection>
+                {viewState.view === 'groups' && (
+                    <GroupList onGroupSelect={handleGroupSelect} />
+                )}
+
+                {viewState.view === 'packages' && (
+                    <PackageList
+                        groupId={viewState.group}
+                        onBack={handleBackToGroups}
+                        onPackageSelect={handlePackageSelect}
+                    />
+                )}
+
+                {viewState.view === 'details' && (
+                    <PackageDetails
+                        packageId={viewState.packageId}
+                        onBack={handleBackFromDetails}
+                    />
+                )}
+            </PageSection>
+        </Page>
     );
 };
 

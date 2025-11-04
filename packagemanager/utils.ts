@@ -114,7 +114,7 @@ export function getErrorMessage(error: unknown): string {
 /**
  * Filter packages by search query
  */
-export function filterPackages(packages: PackageInfo[], query: string): PackageInfo[] {
+export function filterPackages<T extends PackageInfo>(packages: T[], query: string): T[] {
     if (!query) return packages;
 
     const lowerQuery = query.toLowerCase();
@@ -127,7 +127,7 @@ export function filterPackages(packages: PackageInfo[], query: string): PackageI
 /**
  * Sort packages by name
  */
-export function sortPackagesByName(packages: PackageInfo[], ascending = true): PackageInfo[] {
+export function sortPackagesByName<T extends PackageInfo>(packages: T[], ascending = true): T[] {
     return [...packages].sort((a, b) => {
         const cmp = a.name.localeCompare(b.name);
         return ascending ? cmp : -cmp;
@@ -137,7 +137,7 @@ export function sortPackagesByName(packages: PackageInfo[], ascending = true): P
 /**
  * Sort packages by installation status
  */
-export function sortPackagesByStatus(packages: PackageInfo[], installedFirst = true): PackageInfo[] {
+export function sortPackagesByStatus<T extends PackageInfo>(packages: T[], installedFirst = true): T[] {
     return [...packages].sort((a, b) => {
         if (a.installed === b.installed) {
             return a.name.localeCompare(b.name);
