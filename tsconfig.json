@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "baseUrl": "./packagemanager",
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
+    "incremental": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "es2021"
+    ],
+    "moduleResolution": "node",
+    "noEmit": true,
+    "strict": true,
+    "target": "es2021",
+    "skipLibCheck": true
+  },
+  "include": [
+    "packagemanager/**/*"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+    "version": 0,
+    "requires": {
+        "cockpit": "276"
+    },
+    "name": "packagemanager",
+    "menu": {
+        "index": {
+            "label": "Package Manager",
+            "order": 80
+        }
+    }
+}

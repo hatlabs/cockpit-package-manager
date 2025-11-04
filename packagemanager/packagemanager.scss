@@ -1,0 +1,53 @@
+/* Cockpit Package Manager Styles */
+
+.package-manager {
+    padding: var(--pf-v6-global--spacer--md);
+}
+
+.section-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--pf-v6-global--spacer--md);
+}
+
+.section-card {
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+        box-shadow: var(--pf-v6-global--BoxShadow--lg);
+    }
+}
+
+.package-list-toolbar {
+    margin-bottom: var(--pf-v6-global--spacer--md);
+}
+
+.package-status-badge {
+    &.installed {
+        background-color: var(--pf-v6-global--success-color--100);
+    }
+
+    &.available {
+        background-color: var(--pf-v6-global--info-color--100);
+    }
+}
+
+.package-details {
+    .dependency-link {
+        color: var(--pf-v6-global--link--Color);
+        cursor: pointer;
+        text-decoration: underline;
+
+        &:hover {
+            color: var(--pf-v6-global--link--Color--hover);
+        }
+    }
+}
+
+.search-toolbar {
+    display: flex;
+    gap: var(--pf-v6-global--spacer--sm);
+    align-items: center;
+    margin-bottom: var(--pf-v6-global--spacer--md);
+}
