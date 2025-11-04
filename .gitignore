@@ -8,3 +8,5 @@ packagemanager/packagemanager.js
 packagemanager/packagemanager.js.map
 packagemanager/packagemanager.css
 packagemanager/packagemanager.css.map
+coverage/
+.vitest/

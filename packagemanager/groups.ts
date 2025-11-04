@@ -217,7 +217,6 @@ export const PRIORITY_GROUPS = [
     'security',
     'programming',
     'virtualization',
-    'database',
 ];
 
 /**
