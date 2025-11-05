@@ -2,6 +2,24 @@
 
 A modern, web-based package manager interface for Cockpit using PackageKit as the backend. Browse, search, install, and manage packages through an intuitive web interface.
 
+## What Packages Does This Manage?
+
+This application manages **system packages** (software installed at the operating system level) using [PackageKit](https://www.freedesktop.org/software/PackageKit/) as the backend abstraction layer.
+
+**Package Types Supported:**
+
+PackageKit supports multiple package management backends. This application is primarily developed and tested with:
+
+- **APT/DEB packages** (Debian, Ubuntu, and derivatives like HaLOS)
+
+However, PackageKit's abstraction layer means it can theoretically work with other backends including:
+- DNF/RPM (Fedora, RHEL, CentOS)
+- Zypper/RPM (openSUSE)
+- ALPM (Arch Linux)
+- And [many others](https://github.com/PackageKit/PackageKit/blob/main/backends/MAINTAINERS.md)
+
+**Note:** This project is part of [HaLOS](https://github.com/hatlabs/halos-distro) and primarily tested on Debian Trixie systems. While PackageKit's abstraction should allow it to work with other distributions, testing has focused on APT/DEB-based systems.
+
 ## Features
 
 - **Browse by Group**: View packages organized by PackageKit groups (admin, network, development, etc.)
