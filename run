@@ -1,0 +1,242 @@
+#!/usr/bin/env bash
+#
+# usage: ./run command [argument ...]
+#
+# Commands used during development / CI.
+#
+# See https://death.andgravity.com/run-sh
+# for an explanation of how it works and why it's useful.
+
+# First, set up the environment.
+# (Check the notes at the end when changing this.)
+
+set -o nounset
+set -o pipefail
+set -o errexit
+
+# Enable this to echo commands as they are executed.
+#set -o xtrace
+
+# Change the current directory to the project root.
+PROJECT_ROOT=${0%/*}
+if [[ $0 != $PROJECT_ROOT && $PROJECT_ROOT != "" ]]; then
+  cd "$PROJECT_ROOT"
+fi
+readonly PROJECT_ROOT=$(pwd)
+
+# Store the absolute path to this script (useful for recursion).
+readonly SCRIPT="$PROJECT_ROOT/$(basename "$0")"
+
+################################################################################
+# Version Management Commands
+
+function version:show {
+  #@ Show current project version
+  #@ Category: Version Management
+  node -p "require('./package.json').version"
+}
+
+function version:bump:patch {
+  #@ Bump patch version (0.1.0 -> 0.1.1)
+  #@ Category: Version Management
+  echo "📈 Bumping patch version..."
+  npm version patch --no-git-tag-version
+  echo "✅ Version bumped to $(version:show)"
+}
+
+function version:bump:minor {
+  #@ Bump minor version (0.1.0 -> 0.2.0)
+  #@ Category: Version Management
+  echo "📈 Bumping minor version..."
+  npm version minor --no-git-tag-version
+  echo "✅ Version bumped to $(version:show)"
+}
+
+function version:bump:major {
+  #@ Bump major version (0.1.0 -> 1.0.0)
+  #@ Category: Version Management
+  echo "📈 Bumping major version..."
+  npm version major --no-git-tag-version
+  echo "✅ Version bumped to $(version:show)"
+}
+
+################################################################################
+# Build Commands
+
+function build {
+  #@ Build the application
+  #@ Category: Build
+  echo "🏗️  Building application..."
+  npm run build
+  echo "✅ Build completed"
+}
+
+function build:watch {
+  #@ Build with watch mode for development
+  #@ Category: Build
+  echo "👀 Starting watch mode..."
+  npm run watch
+}
+
+function build:typecheck {
+  #@ Run TypeScript type checking
+  #@ Category: Build
+  echo "🔍 Type checking..."
+  npm run typecheck
+  echo "✅ Type check passed"
+}
+
+################################################################################
+# Test Commands
+
+function test {
+  #@ Run tests in watch mode
+  #@ Category: Testing
+  npm test
+}
+
+function test:run {
+  #@ Run tests once and exit
+  #@ Category: Testing
+  npm run test:run
+}
+
+function test:ui {
+  #@ Run tests with UI
+  #@ Category: Testing
+  npm run test:ui
+}
+
+function test:coverage {
+  #@ Run tests with coverage report
+  #@ Category: Testing
+  npm run test:coverage
+}
+
+################################################################################
+# Development Commands
+
+function dev:setup {
+  #@ Install dependencies
+  #@ Category: Development
+  echo "📦 Installing dependencies..."
+  npm install
+  echo "✅ Dependencies installed"
+}
+
+function dev:clean {
+  #@ Clean build artifacts and node_modules
+  #@ Category: Development
+  echo "🧹 Cleaning..."
+  rm -rf node_modules packagemanager/*.js packagemanager/*.js.map packagemanager/*.css packagemanager/*.css.map
+  rm -rf test-results playwright-report
+  echo "✅ Cleaned"
+}
+
+################################################################################
+# Release Commands
+
+function release:prepare {
+  #@ Prepare a release (bump version, commit)
+  #@ Usage: ./run release:prepare [patch|minor|major]
+  #@ Category: Release
+  local bump_type="${1:-patch}"
+
+  echo "🚀 Preparing $bump_type release..."
+
+  # Bump version
+  case $bump_type in
+    patch)
+      version:bump:patch
+      ;;
+    minor)
+      version:bump:minor
+      ;;
+    major)
+      version:bump:major
+      ;;
+    *)
+      echo "❌ Invalid bump type: $bump_type (use patch, minor, or major)"
+      return 1
+      ;;
+  esac
+
+  local new_version=$(version:show)
+
+  # Stage package.json and package-lock.json
+  git add package.json package-lock.json
+
+  # Commit
+  git commit -m "chore(release): bump version to $new_version"
+
+  echo "✅ Release prepared: v$new_version"
+  echo ""
+  echo "Next steps:"
+  echo "  1. Push branch: git push origin <branch-name>"
+  echo "  2. Create and merge PR"
+  echo "  3. Tag and push: git tag v$new_version && git push --tags"
+  echo "  4. Create GitHub release from the tag"
+}
+
+################################################################################
+# Help System
+
+function help {
+  #@ Show this help message
+  #@ Category: Core
+  echo "Available commands:"
+  echo ""
+
+  # Extract function definitions and their help comments
+  awk '/^function / {
+    fname = $2
+    sub(/[({].*/, "", fname)
+    getline
+    if ($0 ~ /#@/) {
+      desc = $0
+      sub(/.*#@ /, "", desc)
+      sub(/ *$/, "", desc)
+      getline
+      if ($0 ~ /#@ Category:/) {
+        cat = $0
+        sub(/.*Category: /, "", cat)
+        sub(/ *$/, "", cat)
+        if (!seen[cat]++) categories[++cat_count] = cat
+        commands[cat, ++cmd_count[cat]] = fname
+        descriptions[cat, cmd_count[cat]] = desc
+      }
+    }
+  }
+  END {
+    for (i = 1; i <= cat_count; i++) {
+      cat = categories[i]
+      print "\n" cat ":"
+      for (j = 1; j <= cmd_count[cat]; j++) {
+        printf "  %-30s %s\n", commands[cat, j], descriptions[cat, j]
+      }
+    }
+  }' "$0"
+
+  echo ""
+  echo "Usage: ./run <command> [arguments...]"
+}
+
+################################################################################
+# Commands end.
+
+# Dispatch to command. A simpler version would be just "$@" (with the quotes!).
+
+TIMEFORMAT=$'\nTask completed in %3lR'
+time "${@:-help}"
+
+# Some dev notes for this script.
+#
+# The commands *require*:
+#
+# * The current working directory is the project root.
+# * The shell options and globals are set as they are.
+#
+# Inspired by the following:
+#  - https://death.andgravity.com/run-sh
+#  - http://www.oilshell.org/blog/2020/02/good-parts-sketch.html
+#  - https://www.youtube.com/watch?v=SdmYd5hJISM&t=7s
