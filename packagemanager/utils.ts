@@ -147,11 +147,14 @@ export function sortPackagesByStatus<T extends PackageInfo>(packages: T[], insta
 }
 
 /**
- * Sort packages by size (requires PackageDetails)
+ * Sort packages by size (requires PackageDetails with size field)
+ * Packages without size info are sorted to the end
  */
 export function sortPackagesBySize(packages: PackageDetails[], ascending = true): PackageDetails[] {
     return [...packages].sort((a, b) => {
-        const cmp = a.size - b.size;
+        const aSize = a.size ?? Number.MAX_SAFE_INTEGER;
+        const bSize = b.size ?? Number.MAX_SAFE_INTEGER;
+        const cmp = aSize - bSize;
         return ascending ? cmp : -cmp;
     });
 }

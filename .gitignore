@@ -8,5 +8,12 @@ packagemanager/packagemanager.js
 packagemanager/packagemanager.js.map
 packagemanager/packagemanager.css
 packagemanager/packagemanager.css.map
+packagemanager/*.woff2
 coverage/
 .vitest/
+CLAUDE.local.md
+test-results/
+playwright-report/
+playwright-output.log
+cockpit-package-manager-screenshot.png
+*.md.tmp

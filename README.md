@@ -79,7 +79,7 @@ sudo cp -r packagemanager /usr/share/cockpit/
 dpkg-buildpackage -us -uc -b
 
 # Install
-sudo dpkg -i ../cockpit-packagemanager_*.deb
+sudo dpkg -i ../cockpit-package-manager_*.deb
 ```
 
 ## Usage

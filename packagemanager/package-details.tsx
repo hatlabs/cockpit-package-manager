@@ -161,7 +161,7 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
         );
     }
 
-    const groupInfo = getGroupInfo(pkg.group);
+    const groupInfo = getGroupInfo(pkg.group || 'unknown');
 
     return (
         <div className="package-details">
@@ -242,10 +242,12 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                     <DescriptionListDescription>{groupInfo.name}</DescriptionListDescription>
                 </DescriptionListGroup>
 
-                <DescriptionListGroup>
-                    <DescriptionListTerm>Size</DescriptionListTerm>
-                    <DescriptionListDescription>{formatSize(pkg.size)}</DescriptionListDescription>
-                </DescriptionListGroup>
+                {pkg.size !== undefined && (
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Size</DescriptionListTerm>
+                        <DescriptionListDescription>{formatSize(pkg.size)}</DescriptionListDescription>
+                    </DescriptionListGroup>
+                )}
 
                 {pkg.license && (
                     <DescriptionListGroup>

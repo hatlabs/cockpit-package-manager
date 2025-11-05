@@ -3,6 +3,8 @@
  * Maps PackageKit group enums to user-friendly names and descriptions
  */
 
+import { PkEnum } from './types';
+
 export interface PackageGroup {
     id: string;              // PackageKit group ID
     name: string;            // Display name
@@ -236,6 +238,98 @@ export const HIDDEN_GROUPS = [
  */
 export function isGroupHidden(groupId: string): boolean {
     return HIDDEN_GROUPS.includes(groupId);
+}
+
+/**
+ * Map PackageKit group enum number to group ID string
+ * Based on PkGroupEnum from pk-enum.h
+ */
+export function mapGroupEnumToId(groupEnum: number): string {
+    const groupMap: Record<number, string> = {
+        [PkEnum.GROUP_UNKNOWN]: 'unknown',
+        [PkEnum.GROUP_ACCESSIBILITY]: 'accessibility',
+        [PkEnum.GROUP_ACCESSORIES]: 'accessories',
+        [PkEnum.GROUP_ADMIN_TOOLS]: 'admin-tools',
+        [PkEnum.GROUP_COMMUNICATION]: 'communication',
+        [PkEnum.GROUP_DESKTOP_GNOME]: 'desktop-gnome',
+        [PkEnum.GROUP_DESKTOP_KDE]: 'desktop-kde',
+        [PkEnum.GROUP_DESKTOP_XFCE]: 'desktop-xfce',
+        [PkEnum.GROUP_DESKTOP_OTHER]: 'desktop-other',
+        [PkEnum.GROUP_EDUCATION]: 'education',
+        [PkEnum.GROUP_FONTS]: 'fonts',
+        [PkEnum.GROUP_GAMES]: 'games',
+        [PkEnum.GROUP_GRAPHICS]: 'graphics',
+        [PkEnum.GROUP_INTERNET]: 'internet',
+        [PkEnum.GROUP_LEGACY]: 'legacy',
+        [PkEnum.GROUP_LOCALIZATION]: 'localization',
+        [PkEnum.GROUP_MAPS]: 'maps',
+        [PkEnum.GROUP_MULTIMEDIA]: 'multimedia',
+        [PkEnum.GROUP_NETWORK]: 'network',
+        [PkEnum.GROUP_OFFICE]: 'office',
+        [PkEnum.GROUP_OTHER]: 'other',
+        [PkEnum.GROUP_POWER_MANAGEMENT]: 'power-management',
+        [PkEnum.GROUP_PROGRAMMING]: 'programming',
+        [PkEnum.GROUP_PUBLISHING]: 'publishing',
+        [PkEnum.GROUP_REPOS]: 'repos',
+        [PkEnum.GROUP_SECURITY]: 'security',
+        [PkEnum.GROUP_SERVERS]: 'servers',
+        [PkEnum.GROUP_SYSTEM]: 'system',
+        [PkEnum.GROUP_VIRTUALIZATION]: 'virtualization',
+        [PkEnum.GROUP_SCIENCE]: 'science',
+        [PkEnum.GROUP_DOCUMENTATION]: 'documentation',
+        [PkEnum.GROUP_ELECTRONICS]: 'electronics',
+        [PkEnum.GROUP_COLLECTIONS]: 'collections',
+        [PkEnum.GROUP_VENDOR]: 'vendor',
+        [PkEnum.GROUP_NEWEST]: 'newest',
+    };
+
+    return groupMap[groupEnum] || 'unknown';
+}
+
+/**
+ * Map group ID string to PackageKit group enum number
+ * Reverse of mapGroupEnumToId()
+ */
+export function mapGroupIdToEnum(groupId: string): number {
+    const idToEnumMap: Record<string, number> = {
+        'unknown': PkEnum.GROUP_UNKNOWN,
+        'accessibility': PkEnum.GROUP_ACCESSIBILITY,
+        'accessories': PkEnum.GROUP_ACCESSORIES,
+        'admin-tools': PkEnum.GROUP_ADMIN_TOOLS,
+        'communication': PkEnum.GROUP_COMMUNICATION,
+        'desktop-gnome': PkEnum.GROUP_DESKTOP_GNOME,
+        'desktop-kde': PkEnum.GROUP_DESKTOP_KDE,
+        'desktop-xfce': PkEnum.GROUP_DESKTOP_XFCE,
+        'desktop-other': PkEnum.GROUP_DESKTOP_OTHER,
+        'education': PkEnum.GROUP_EDUCATION,
+        'fonts': PkEnum.GROUP_FONTS,
+        'games': PkEnum.GROUP_GAMES,
+        'graphics': PkEnum.GROUP_GRAPHICS,
+        'internet': PkEnum.GROUP_INTERNET,
+        'legacy': PkEnum.GROUP_LEGACY,
+        'localization': PkEnum.GROUP_LOCALIZATION,
+        'maps': PkEnum.GROUP_MAPS,
+        'multimedia': PkEnum.GROUP_MULTIMEDIA,
+        'network': PkEnum.GROUP_NETWORK,
+        'office': PkEnum.GROUP_OFFICE,
+        'other': PkEnum.GROUP_OTHER,
+        'power-management': PkEnum.GROUP_POWER_MANAGEMENT,
+        'programming': PkEnum.GROUP_PROGRAMMING,
+        'publishing': PkEnum.GROUP_PUBLISHING,
+        'repos': PkEnum.GROUP_REPOS,
+        'security': PkEnum.GROUP_SECURITY,
+        'servers': PkEnum.GROUP_SERVERS,
+        'system': PkEnum.GROUP_SYSTEM,
+        'virtualization': PkEnum.GROUP_VIRTUALIZATION,
+        'science': PkEnum.GROUP_SCIENCE,
+        'documentation': PkEnum.GROUP_DOCUMENTATION,
+        'electronics': PkEnum.GROUP_ELECTRONICS,
+        'collections': PkEnum.GROUP_COLLECTIONS,
+        'vendor': PkEnum.GROUP_VENDOR,
+        'newest': PkEnum.GROUP_NEWEST,
+    };
+
+    return idToEnumMap[groupId] || PkEnum.GROUP_UNKNOWN;
 }
 
 /**

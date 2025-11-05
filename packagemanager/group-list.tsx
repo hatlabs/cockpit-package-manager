@@ -12,15 +12,13 @@ import {
     Spinner,
     EmptyState,
     EmptyStateBody,
-    Badge,
     Title,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import * as PK from './packagekit';
-import { GroupInfo, PackageDetails } from './types';
-import { countPackagesByGroup } from './utils';
-import { getAllGroups, sortGroupsByPriority, isGroupHidden } from './groups';
+import { GroupInfo } from './types';
+import { sortGroupsByPriority, isGroupHidden, PACKAGEKIT_GROUPS } from './groups';
 
 interface GroupListProps {
     onGroupSelect: (groupId: string) => void;
@@ -48,26 +46,18 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                 throw new Error('PackageKit is not available on this system');
             }
 
-            // Get all packages with details to determine groups
-            const packages = await PK.getPackages();
+            // Initialize all known groups
+            const initialGroups: GroupInfo[] = Object.keys(PACKAGEKIT_GROUPS).map(groupId => ({
+                id: groupId,
+                name: PACKAGEKIT_GROUPS[groupId].name,
+                description: PACKAGEKIT_GROUPS[groupId].description,
+                packageCount: 0,
+                installedCount: 0,
+            }));
 
-            // We need details to get group info
-            const packageIds = packages.map(p => p.id);
-            const details = await PK.getDetails(packageIds);
-
-            // Count packages by group
-            const groupCounts = countPackagesByGroup(details);
-
-            // Convert to array and filter out empty groups
-            const groupArray = Array.from(groupCounts.values())
-                .filter(g => g.packageCount > 0);
-
-            // Sort by priority
-            const sorted = sortGroupsByPriority(groupArray);
-
+            const sorted = sortGroupsByPriority(initialGroups);
             setGroups(sorted);
         } catch (err) {
-            console.error('Failed to load groups:', err);
             setError(err instanceof Error ? err.message : 'Failed to load package groups');
         } finally {
             setLoading(false);
@@ -143,17 +133,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                         >
                             <CardTitle>{group.name}</CardTitle>
                             <CardBody>
-                                <p className="pf-v6-u-mb-sm">{group.description}</p>
-                                <div className="pf-v6-u-display-flex pf-v6-u-justify-content-space-between">
-                                    <Badge isRead>
-                                        {group.packageCount} {group.packageCount === 1 ? 'package' : 'packages'}
-                                    </Badge>
-                                    {group.installedCount > 0 && (
-                                        <Badge>
-                                            {group.installedCount} installed
-                                        </Badge>
-                                    )}
-                                </div>
+                                <p>{group.description}</p>
                             </CardBody>
                         </Card>
                     ))}

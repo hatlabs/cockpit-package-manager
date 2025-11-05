@@ -11,6 +11,7 @@ import {
     TransactionError,
     PackageDependency
 } from './types';
+import { mapGroupEnumToId } from './groups';
 
 const PACKAGEKIT_SERVICE = 'org.freedesktop.PackageKit';
 const PACKAGEKIT_OBJECT = '/org/freedesktop/PackageKit';
@@ -45,6 +46,10 @@ function call(objectPath: string, iface: string, method: string, args: any[]): P
  * Format: name;version;arch;repo
  */
 export function parsePackageId(packageId: string): PackageInfo {
+    if (typeof packageId !== 'string') {
+        console.error('[PackageKit] parsePackageId called with non-string:', typeof packageId, packageId);
+        throw new TypeError(`packageId must be a string, got ${typeof packageId}: ${JSON.stringify(packageId)}`);
+    }
     const parts = packageId.split(';');
     return {
         id: packageId,
@@ -270,6 +275,33 @@ export function searchDetails(
 }
 
 /**
+ * Search for packages by PackageKit group(s)
+ * Groups can be: 'network', 'admin-tools', 'programming', etc.
+ * This is much faster than getting all packages and filtering client-side.
+ */
+export function searchGroups(
+    groups: string[],
+    filter: number = PkEnum.FILTER_ARCH | PkEnum.FILTER_NOT_SOURCE | PkEnum.FILTER_NEWEST,
+    progressCb?: (progress: ProgressData) => void
+): Promise<PackageInfo[]> {
+    const packages: PackageInfo[] = [];
+
+    return cancellableTransaction(
+        'SearchGroups',
+        [filter, groups],
+        progressCb,
+        {
+            Package: (info: number, packageId: string, summary: string) => {
+                const pkg = parsePackageId(packageId);
+                pkg.summary = summary;
+                pkg.installed = info === PkEnum.INFO_INSTALLED;
+                packages.push(pkg);
+            }
+        }
+    ).then(() => packages);
+}
+
+/**
  * Get all packages (with optional filter)
  */
 export function getPackages(
@@ -307,11 +339,25 @@ export function getDetails(
         [packageIds],
         progressCb,
         {
-            Details: (packageId: string, license: string, group: string, detail: string, url: string, size: number) => {
+            Details: (data: any) => {
+                // D-Bus returns an object with typed values: {key: {t: "type", v: value}}
+
+                const packageId = data['package-id']?.v;
+                const license = data.license?.v || '';
+                const groupEnum = data.group?.v || 0;
+                const description = data.description?.v || data.summary?.v || '';
+                const url = data.url?.v || '';
+                const size = data.size?.v || 0;
+
+                if (!packageId) {
+                    console.error('[PackageKit] Details callback missing package-id:', data);
+                    return;
+                }
+
                 const pkg = parsePackageId(packageId) as PackageDetails;
-                pkg.description = detail;
+                pkg.description = description;
                 pkg.license = license;
-                pkg.group = group;
+                pkg.group = mapGroupEnumToId(groupEnum);  // Map group enum to ID string
                 pkg.url = url;
                 pkg.size = size;
                 details.push(pkg);

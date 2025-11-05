@@ -2,9 +2,11 @@
 
 Cockpit-based package manager using PackageKit, inspired by Raspberry Pi's Add/Remove Software.
 
+**Local Instructions**: For environment-specific instructions and configurations, see @CLAUDE.local.md (not committed to version control).
+
 ## Project Context
 
-This is a web-based package manager interface for Cockpit, designed for server and marine use cases as part of the HaLOS distribution. Unlike desktop-focused package managers, this focuses on Debian sections and provides a clean, efficient interface for managing system packages.
+This is a web-based package manager interface for Cockpit.
 
 ## Architecture
 
@@ -63,16 +65,6 @@ resolve(name): Promise<string>
 refreshCache(progressCb): Promise<void>
 detect(): Promise<boolean>
 ```
-
-### Debian Sections
-
-Packages are organized by standard Debian sections. The section is extracted from the package metadata (repo field in PackageKit). Common sections:
-
-- admin, comm, database, devel, doc, editors, electronics, embedded
-- fonts, games, gnome, graphics, hamradio, interpreters
-- java, javascript, kde, kernel, libs, mail, math
-- net, news, perl, python, ruby, rust, science
-- shells, sound, text, utils, video, web, x11
 
 ## Development
 
@@ -173,7 +165,9 @@ try {
 
 ## Git Workflow
 
-**IMPORTANT**: Always ask before committing or pushing.
+**IMPORTANT**: Always ask before pushing, creating/pushing tags, or running destructive git operations that affect remote repositories. Local commits and branch operations are fine.
+
+When performing `git add`, always list specific files instead of using `git add .` to avoid accidentally including unwanted changes.
 
 Follow conventional commit format:
 - `feat(section): add section browsing`
