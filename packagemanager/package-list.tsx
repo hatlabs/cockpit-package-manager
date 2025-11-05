@@ -56,6 +56,18 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
         loadPackages();
     }, [groupId]);
 
+    // Keyboard navigation: Escape key goes back
+    useEffect(() => {
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onBack();
+            }
+        }
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onBack]);
+
     async function loadPackages() {
         setLoading(true);
         setLoadingProgress(0);
@@ -143,14 +155,15 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
     if (loading) {
         return (
             <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
-                <Spinner size="xl" />
-                <p className="pf-v6-u-mt-md">Loading packages for {groupInfo.name}...</p>
+                <Spinner size="xl" aria-label={`Loading packages for ${groupInfo.name}`} />
+                <p className="pf-v6-u-mt-md" aria-live="polite">Loading packages for {groupInfo.name}...</p>
                 {loadingProgress > 0 && (
                     <div style={{ maxWidth: '400px', margin: '1rem auto' }}>
                         <Progress
                             value={loadingProgress}
                             title="Loading package details"
                             variant={ProgressVariant.success}
+                            aria-label={`Loading progress: ${loadingProgress}%`}
                         />
                     </div>
                 )}
@@ -168,7 +181,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                     <BreadcrumbItem isActive>{groupInfo.name}</BreadcrumbItem>
                 </Breadcrumb>
                 {error && (
-                    <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
+                    <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md" role="alert" aria-live="assertive">
                         <div className="pf-v6-c-alert__icon">
                             <ExclamationCircleIcon />
                         </div>
@@ -189,6 +202,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                                 value={searchQuery}
                                 onChange={(_, value) => setSearchQuery(value)}
                                 onClear={() => setSearchQuery('')}
+                                aria-label={`Search packages in ${groupInfo.name}`}
                             />
                         </FlexItem>
                     </Flex>
@@ -245,7 +259,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                                                 <Td modifier="fitContent">
                                                     {isOperating ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                            <Spinner size="sm" /> {progress}%
+                                                            <Spinner size="sm" aria-label={`Processing ${pkg.name}`} /> {progress}%
                                                         </div>
                                                     ) : pkg.installed ? (
                                                         <Button
@@ -253,6 +267,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                                                             size="sm"
                                                             onClick={() => handleRemove(pkg)}
                                                             isDisabled={operatingOn !== null}
+                                                            aria-label={`Remove ${pkg.name}`}
                                                         >
                                                             Remove
                                                         </Button>
@@ -262,6 +277,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                                                             size="sm"
                                                             onClick={() => handleInstall(pkg)}
                                                             isDisabled={operatingOn !== null}
+                                                            aria-label={`Install ${pkg.name}`}
                                                         >
                                                             Install
                                                         </Button>

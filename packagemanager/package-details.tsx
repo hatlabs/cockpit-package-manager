@@ -65,6 +65,18 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
         loadPackageDetails();
     }, [packageId]);
 
+    // Keyboard navigation: Escape key goes back
+    useEffect(() => {
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onBack();
+            }
+        }
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onBack]);
+
     async function loadPackageDetails() {
         setLoading(true);
         setError(null);
@@ -156,8 +168,8 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
     if (loading) {
         return (
             <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
-                <Spinner size="xl" />
-                <p className="pf-v6-u-mt-md">Loading package details...</p>
+                <Spinner size="xl" aria-label="Loading package details" />
+                <p className="pf-v6-u-mt-md" aria-live="polite">Loading package details...</p>
             </div>
         );
     }
@@ -219,7 +231,7 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
 
             {error && (
                 <FlexItem>
-                    <div className="pf-v6-c-alert pf-m-danger">
+                    <div className="pf-v6-c-alert pf-m-danger" role="alert" aria-live="assertive">
                         <div className="pf-v6-c-alert__icon">
                             <ExclamationCircleIcon />
                         </div>
@@ -245,6 +257,7 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                         onClick={handleRemove}
                         isDisabled={operating}
                         isLoading={operating}
+                        aria-label={`Remove ${pkg.name} package`}
                     >
                         Remove Package
                     </Button>
@@ -254,6 +267,7 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                         onClick={handleInstall}
                         isDisabled={operating}
                         isLoading={operating}
+                        aria-label={`Install ${pkg.name} package`}
                     >
                         Install Package
                     </Button>
@@ -330,7 +344,7 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                             <strong>Homepage:</strong>
                         </FlexItem>
                         <FlexItem flex={{ default: 'flex_2' }}>
-                            <a href={pkg.url} target="_blank" rel="noopener noreferrer">{pkg.url}</a>
+                            <a href={pkg.url} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${pkg.name} homepage (opens in new tab)`}>{pkg.url}</a>
                         </FlexItem>
                     </Flex>
                 </FlexItem>

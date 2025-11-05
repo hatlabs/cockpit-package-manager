@@ -246,8 +246,8 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
     if (loading) {
         return (
             <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
-                <Spinner size="xl" />
-                <p className="pf-v6-u-mt-md">Loading package groups...</p>
+                <Spinner size="xl" aria-label="Loading package groups" />
+                <p className="pf-v6-u-mt-md" aria-live="polite">Loading package groups...</p>
             </div>
         );
     }
@@ -277,12 +277,13 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
                     onChange={(_, value) => setSearchQuery(value)}
                     onClear={() => setSearchQuery('')}
                     onKeyDown={handleSearchKeyDown}
+                    aria-label="Search for packages"
                 />
             </div>
 
             {/* Show search error if any */}
             {searchError && (
-                <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
+                <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md" role="alert" aria-live="assertive">
                     <div className="pf-v6-c-alert__icon">
                         <ExclamationCircleIcon />
                     </div>
@@ -303,8 +304,8 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
                 searching && !hasResults ? (
                     // First search - show big spinner
                     <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
-                        <Spinner size="lg" />
-                        <p className="pf-v6-u-mt-md">Searching packages...</p>
+                        <Spinner size="lg" aria-label="Searching packages" />
+                        <p className="pf-v6-u-mt-md" aria-live="polite">Searching packages...</p>
                     </div>
                 ) : searchResults.length === 0 && !searching ? (
                     <EmptyState>
@@ -356,7 +357,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
                                             <Td modifier="fitContent">
                                                 {isOperating ? (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <Spinner size="sm" /> {progress}%
+                                                        <Spinner size="sm" aria-label={`Processing ${pkg.name}`} /> {progress}%
                                                     </div>
                                                 ) : pkg.installed ? (
                                                     <Button
@@ -364,6 +365,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
                                                         size="sm"
                                                         onClick={() => handleRemove(pkg)}
                                                         isDisabled={operatingOn !== null}
+                                                        aria-label={`Remove ${pkg.name}`}
                                                     >
                                                         Remove
                                                     </Button>
@@ -373,6 +375,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect, onPackageSe
                                                         size="sm"
                                                         onClick={() => handleInstall(pkg)}
                                                         isDisabled={operatingOn !== null}
+                                                        aria-label={`Install ${pkg.name}`}
                                                     >
                                                         Install
                                                     </Button>
