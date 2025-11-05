@@ -1,3 +1,5 @@
+⚠️ **THESE RULES ONLY APPLY TO FILES IN /cockpit-package-manager/** ⚠️
+
 # Cockpit Package Manager - Development Guide
 
 Cockpit-based package manager using PackageKit, inspired by Raspberry Pi's Add/Remove Software.

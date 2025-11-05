@@ -1,2 +1,2 @@
-/* Import PatternFly 6 base CSS with theme tokens and all components */
-@import '@patternfly/patternfly/patternfly.css';
+/* PatternFly 6 base CSS is copied directly by the build script
+ * This file is kept for potential custom styles */
