@@ -1,0 +1,126 @@
+name: Build and Draft Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Read version from package.json
+      id: version
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Check if release exists
+      id: check_release
+      run: |
+        if gh release view "v${{ steps.version.outputs.version }}" &>/dev/null; then
+          IS_DRAFT=$(gh release view "v${{ steps.version.outputs.version }}" --json isDraft --jq '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "delete_existing=true" >> $GITHUB_OUTPUT
+            echo "Existing draft release found - will delete and recreate"
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "delete_existing=false" >> $GITHUB_OUTPUT
+            echo "Published release v${{ steps.version.outputs.version }} already exists - skipping"
+          fi
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "delete_existing=false" >> $GITHUB_OUTPUT
+          echo "No existing release found"
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Delete existing draft release
+      if: steps.check_release.outputs.delete_existing == 'true'
+      run: |
+        echo "Deleting existing draft release v${{ steps.version.outputs.version }}"
+        gh release delete "v${{ steps.version.outputs.version }}" --yes
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Install dependencies and build
+      if: steps.check_release.outputs.skip == 'false'
+      run: |
+        npm ci
+        npm run build
+
+    - name: Create draft release
+      if: steps.check_release.outputs.skip == 'false'
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+
+        # Get the latest published release tag for changelog
+        LAST_TAG=$(gh release list --limit 100 --json tagName,isPrerelease,isDraft --jq '.[] | select(.isDraft == false and .isPrerelease == false) | .tagName' | head -n1)
+
+        if [ -n "$LAST_TAG" ]; then
+          echo "Generating changelog since $LAST_TAG"
+          CHANGELOG_COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+        else
+          echo "No previous releases found, using recent commits"
+          CHANGELOG_COMMITS=$(git log -10 --pretty=format:"- %s" --no-merges)
+        fi
+
+        # Create release notes
+        cat > release_notes.md <<EOF
+        ## Cockpit Package Manager v${VERSION}
+
+        Cockpit-based package manager using PackageKit, inspired by Raspberry Pi's Add/Remove Software.
+
+        ### Changes
+
+        ${CHANGELOG_COMMITS}
+
+        ### Features
+
+        - Browse packages by Debian software groups
+        - Search for packages across all groups
+        - View detailed package information
+        - Install and remove packages with progress tracking
+        - Dark mode support
+        - Accessible interface with keyboard navigation
+
+        ### Installation
+
+        This is the source code release. For Debian packages, see [cockpit-package-manager-debian](https://github.com/hatlabs/cockpit-package-manager-debian).
+
+        ### Development
+
+        \`\`\`bash
+        npm install
+        npm run build
+        sudo cp -r packagemanager /usr/share/cockpit/
+        \`\`\`
+
+        Access at https://localhost:9090 after installing Cockpit.
+        EOF
+
+        # Create the release (source code is automatically attached by GitHub)
+        gh release create "v${VERSION}" \
+          --draft \
+          --title "v${VERSION}" \
+          --notes-file release_notes.md
+
+        echo "Created draft release v${VERSION}"
+      env:
+        GH_TOKEN: ${{ github.token }}
