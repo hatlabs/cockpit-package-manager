@@ -37,7 +37,7 @@ const context = await esbuild.context({
         '.ts': 'ts',
     },
     external: [
-        'cockpit',
+        // No external dependencies - cockpit loaded as global
     ],
     logLevel: 'info',
 });

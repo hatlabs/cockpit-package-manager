@@ -2,14 +2,32 @@
  * Main Cockpit Package Manager component
  */
 
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Page, PageSection } from '@patternfly/react-core';
 
-import { ViewState, PackageDetails as PackageDetailsType } from './types';
+import { PackageDetails as PackageDetailsType } from './types';
 import { GroupList } from './group-list';
 import { PackageList } from './package-list';
 import { PackageDetails } from './package-details';
+
+// Cockpit is loaded as a global via script tag
+declare const cockpit: any;
+
+// Custom hook to sync with cockpit.location
+function usePageLocation() {
+    const [location, setLocation] = useState(cockpit.location);
+
+    useEffect(() => {
+        function update() {
+            setLocation({ ...cockpit.location });
+        }
+        cockpit.addEventListener("locationchanged", update);
+        return () => cockpit.removeEventListener("locationchanged", update);
+    }, []);
+
+    return location;
+}
 
 // Package cache context for sharing data between components
 interface PackageCacheContextType {
@@ -29,27 +47,33 @@ export function usePackageCache() {
 }
 
 const PackageManager: React.FC = () => {
-    const [viewState, setViewState] = useState<ViewState>({ view: 'groups' });
+    const { path, options } = usePageLocation();
     const [packageCache, setPackageCache] = useState<Map<string, PackageDetailsType[]>>(new Map());
 
     function handleGroupSelect(groupId: string) {
-        setViewState({ view: 'packages', group: groupId });
+        cockpit.location.go(['group', groupId]);
     }
 
-    function handlePackageSelect(packageId: string) {
-        setViewState({ view: 'details', packageId });
+    function handlePackageSelect(packageId: string, groupId?: string) {
+        // Preserve group context in URL options for better back navigation
+        if (groupId) {
+            cockpit.location.go(['package', packageId], { group: groupId });
+        } else {
+            cockpit.location.go(['package', packageId]);
+        }
     }
 
     function handleBackToGroups() {
-        setViewState({ view: 'groups' });
+        cockpit.location.go([]);
     }
 
     function handleBackFromDetails() {
-        // Go back to package list if we have the group context
-        if (viewState.view === 'details') {
-            // For now, just go back to groups
-            // TODO: Preserve group context for better navigation
-            setViewState({ view: 'groups' });
+        // Try to navigate back to the group if context is available
+        const groupId = options.group;
+        if (groupId && typeof groupId === 'string') {
+            cockpit.location.go(['group', groupId]);
+        } else {
+            cockpit.location.go([]);
         }
     }
 
@@ -76,23 +100,36 @@ const PackageManager: React.FC = () => {
         <PackageCacheContext.Provider value={cacheContextValue}>
             <Page>
                 <PageSection>
-                    {viewState.view === 'groups' && (
+                    {/* Groups view: #/ */}
+                    {path.length === 0 && (
                         <GroupList onGroupSelect={handleGroupSelect} />
                     )}
 
-                    {viewState.view === 'packages' && (
+                    {/* Package list view: #/group/<groupId> */}
+                    {path.length === 2 && path[0] === 'group' && (
                         <PackageList
-                            groupId={viewState.group}
+                            groupId={path[1]}
                             onBack={handleBackToGroups}
-                            onPackageSelect={handlePackageSelect}
+                            onPackageSelect={(packageId) => handlePackageSelect(packageId, path[1])}
                         />
                     )}
 
-                    {viewState.view === 'details' && (
+                    {/* Package details view: #/package/<packageId> */}
+                    {path.length === 2 && path[0] === 'package' && (
                         <PackageDetails
-                            packageId={viewState.packageId}
+                            packageId={path[1]}
                             onBack={handleBackFromDetails}
                         />
+                    )}
+
+                    {/* Fallback for invalid paths */}
+                    {(path.length > 2 ||
+                      (path.length === 2 && path[0] !== 'group' && path[0] !== 'package') ||
+                      path.length === 1) && (
+                        <>
+                            {console.warn('[PackageManager] Invalid path:', path)}
+                            {(() => { cockpit.location.go([]); return null; })()}
+                        </>
                     )}
                 </PageSection>
             </Page>

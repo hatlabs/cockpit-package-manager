@@ -20,7 +20,7 @@ import {
     Progress,
     ProgressVariant,
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon, ArrowLeftIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import * as PK from './packagekit';
 import { PackageDetails, ProgressData } from './types';
@@ -230,10 +230,8 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
     return (
         <div className="package-list">
             <Breadcrumb className="pf-v6-u-mb-md">
-                <BreadcrumbItem>
-                    <Button variant="link" icon={<ArrowLeftIcon />} onClick={onBack}>
-                        Groups
-                    </Button>
+                <BreadcrumbItem to="#/">
+                    Groups
                 </BreadcrumbItem>
                 <BreadcrumbItem isActive>{groupInfo.name}</BreadcrumbItem>
             </Breadcrumb>

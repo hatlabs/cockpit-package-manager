@@ -19,7 +19,25 @@ import {
     EmptyStateBody,
     Title,
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon, ArrowLeftIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
+
+// Cockpit is loaded as a global via script tag
+declare const cockpit: any;
+
+// Custom hook to sync with cockpit.location
+function usePageLocation() {
+    const [location, setLocation] = useState(cockpit.location);
+
+    useEffect(() => {
+        function update() {
+            setLocation({ ...cockpit.location });
+        }
+        cockpit.addEventListener("locationchanged", update);
+        return () => cockpit.removeEventListener("locationchanged", update);
+    }, []);
+
+    return location;
+}
 
 import * as PK from './packagekit';
 import { PackageDetails as PackageDetailsType, ProgressData } from './types';
@@ -32,6 +50,7 @@ interface PackageDetailsProps {
 }
 
 export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBack }) => {
+    const { options } = usePageLocation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [pkg, setPkg] = useState<PackageDetailsType | null>(null);
@@ -40,6 +59,9 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
     const [files, setFiles] = useState<string[]>([]);
     const [operating, setOperating] = useState(false);
     const [progress, setProgress] = useState<ProgressData | null>(null);
+
+    // Get group context from URL options
+    const groupId = typeof options.group === 'string' ? options.group : undefined;
 
     useEffect(() => {
         loadPackageDetails();
@@ -146,11 +168,15 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
         return (
             <div>
                 <Breadcrumb className="pf-v6-u-mb-md">
-                    <BreadcrumbItem>
-                        <Button variant="link" icon={<ArrowLeftIcon />} onClick={onBack}>
-                            Back
-                        </Button>
+                    <BreadcrumbItem to="#/">
+                        Groups
                     </BreadcrumbItem>
+                    {groupId && (
+                        <BreadcrumbItem to={`#/group/${groupId}`}>
+                            {getGroupInfo(groupId).name}
+                        </BreadcrumbItem>
+                    )}
+                    <BreadcrumbItem isActive>Package</BreadcrumbItem>
                 </Breadcrumb>
                 <EmptyState>
                     <ExclamationCircleIcon />
@@ -166,11 +192,14 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
     return (
         <div className="package-details">
             <Breadcrumb className="pf-v6-u-mb-md">
-                <BreadcrumbItem>
-                    <Button variant="link" icon={<ArrowLeftIcon />} onClick={onBack}>
-                        Back
-                    </Button>
+                <BreadcrumbItem to="#/">
+                    Groups
                 </BreadcrumbItem>
+                {groupId && (
+                    <BreadcrumbItem to={`#/group/${groupId}`}>
+                        {getGroupInfo(groupId).name}
+                    </BreadcrumbItem>
+                )}
                 <BreadcrumbItem isActive>{pkg.name}</BreadcrumbItem>
             </Breadcrumb>
 
