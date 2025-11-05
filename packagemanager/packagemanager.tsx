@@ -50,6 +50,17 @@ const PackageManager: React.FC = () => {
     const { path, options } = usePageLocation();
     const [packageCache, setPackageCache] = useState<Map<string, PackageDetailsType[]>>(new Map());
 
+    // Handle invalid paths
+    useEffect(() => {
+        const isInvalidPath = path.length > 2 ||
+                              (path.length === 2 && path[0] !== 'group' && path[0] !== 'package') ||
+                              path.length === 1;
+        if (isInvalidPath) {
+            console.warn('[PackageManager] Invalid path:', path);
+            cockpit.location.go([]);
+        }
+    }, [path]);
+
     function handleGroupSelect(groupId: string) {
         cockpit.location.go(['group', groupId]);
     }
@@ -102,7 +113,10 @@ const PackageManager: React.FC = () => {
                 <PageSection>
                     {/* Groups view: #/ */}
                     {path.length === 0 && (
-                        <GroupList onGroupSelect={handleGroupSelect} />
+                        <GroupList
+                            onGroupSelect={handleGroupSelect}
+                            onPackageSelect={handlePackageSelect}
+                        />
                     )}
 
                     {/* Package list view: #/group/<groupId> */}
@@ -120,16 +134,6 @@ const PackageManager: React.FC = () => {
                             packageId={path[1]}
                             onBack={handleBackFromDetails}
                         />
-                    )}
-
-                    {/* Fallback for invalid paths */}
-                    {(path.length > 2 ||
-                      (path.length === 2 && path[0] !== 'group' && path[0] !== 'package') ||
-                      path.length === 1) && (
-                        <>
-                            {console.warn('[PackageManager] Invalid path:', path)}
-                            {(() => { cockpit.location.go([]); return null; })()}
-                        </>
                     )}
                 </PageSection>
             </Page>
