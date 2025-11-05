@@ -106,13 +106,10 @@ jobs:
 
         ### Development
 
-        \`\`\`bash
-        npm install
-        npm run build
-        sudo cp -r packagemanager /usr/share/cockpit/
-        \`\`\`
-
-        Access at https://localhost:9090 after installing Cockpit.
+        For development setup and build commands, see:
+        - [README.md](https://github.com/hatlabs/cockpit-package-manager/blob/main/README.md) - Installation and usage
+        - [CLAUDE.md](https://github.com/hatlabs/cockpit-package-manager/blob/main/CLAUDE.md) - Development guide
+        - \`./run help\` - Available build and development commands
         EOF
 
         # Create the release (source code is automatically attached by GitHub)
