@@ -31,4 +31,4 @@ jobs:
 
       - name: Run tests
         run: npm test
-        if: hashFiles('test/**/*.spec.ts') != ''
+        if: hashFiles('**/*.spec.ts', '**/*.test.ts') != ''
