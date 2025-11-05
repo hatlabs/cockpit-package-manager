@@ -1,2 +1,22 @@
 /* PatternFly 6 base CSS is copied directly by the build script
  * This file is kept for potential custom styles */
+
+/* Constrain overall layout width to work with Cockpit */
+.package-list,
+.group-list {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Vertical multi-column layout for group cards */
+.group-gallery-vertical {
+    column-count: auto;
+    column-width: 250px;
+    column-gap: 1rem;
+    max-width: 100%;
+}
+
+.group-gallery-vertical .group-card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+}

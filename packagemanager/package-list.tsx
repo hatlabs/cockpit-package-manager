@@ -8,9 +8,6 @@ import {
     Button,
     SearchInput,
     Spinner,
-    Toolbar,
-    ToolbarContent,
-    ToolbarItem,
     EmptyState,
     EmptyStateBody,
     Badge,
@@ -179,8 +176,10 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {pkg.summary}
                 </div>
-                <div>{pkg.version}</div>
-                <div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {pkg.version}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     {isOperating ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Spinner size="sm" /> {packageProgress}%
@@ -191,6 +190,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                             size="sm"
                             onClick={() => handleRemove(pkg)}
                             isDisabled={operatingOn !== null}
+                            style={{ width: '80px' }}
                         >
                             Remove
                         </Button>
@@ -200,6 +200,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                             size="sm"
                             onClick={() => handleInstall(pkg)}
                             isDisabled={operatingOn !== null}
+                            style={{ width: '80px' }}
                         >
                             Install
                         </Button>
@@ -236,9 +237,6 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                 <BreadcrumbItem isActive>{groupInfo.name}</BreadcrumbItem>
             </Breadcrumb>
 
-            <h1>{groupInfo.name}</h1>
-            <p className="pf-v6-u-mb-md">{groupInfo.description}</p>
-
             {error && (
                 <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
                     <div className="pf-v6-c-alert__icon">
@@ -248,21 +246,29 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                 </div>
             )}
 
-            <Toolbar>
-                <ToolbarContent>
-                    <ToolbarItem>
-                        <SearchInput
-                            placeholder="Search packages..."
-                            value={searchQuery}
-                            onChange={(_, value) => setSearchQuery(value)}
-                            onClear={() => setSearchQuery('')}
-                        />
-                    </ToolbarItem>
-                    <ToolbarItem variant="pagination" align={{ default: 'alignEnd' }}>
-                        <Badge>{filteredPackages.length} packages</Badge>
-                    </ToolbarItem>
-                </ToolbarContent>
-            </Toolbar>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2fr 3fr 1fr 1.5fr',
+                    gap: '1rem',
+                    padding: '0 1rem',
+                    marginBottom: '1rem',
+                    alignItems: 'start',
+                }}
+            >
+                <div style={{ gridColumn: '1 / 4' }}>
+                    <Title headingLevel="h1" size="2xl" className="pf-v6-u-mb-sm">{groupInfo.name}</Title>
+                    <p>{groupInfo.description}</p>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <SearchInput
+                        placeholder="Search packages..."
+                        value={searchQuery}
+                        onChange={(_, value) => setSearchQuery(value)}
+                        onClear={() => setSearchQuery('')}
+                    />
+                </div>
+            </div>
 
             {filteredPackages.length === 0 ? (
                 <EmptyState>
@@ -275,6 +281,11 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                 </EmptyState>
             ) : (
                 <div>
+                    {/* Package count badge */}
+                    <div style={{ padding: '0.5rem 1rem', marginBottom: '0.5rem' }}>
+                        <Badge>{filteredPackages.length} packages</Badge>
+                    </div>
+
                     {/* Table header */}
                     <div
                         style={{
@@ -290,7 +301,7 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
                         <div>Name</div>
                         <div>Summary</div>
                         <div>Version</div>
-                        <div>Actions</div>
+                        <div style={{ textAlign: 'right' }}>Actions</div>
                     </div>
 
                     {/* Virtual scrolling list */}

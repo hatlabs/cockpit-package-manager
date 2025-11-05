@@ -7,7 +7,6 @@ import {
     Card,
     CardBody,
     CardTitle,
-    Gallery,
     SearchInput,
     Spinner,
     EmptyState,
@@ -18,7 +17,7 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import * as PK from './packagekit';
 import { GroupInfo } from './types';
-import { sortGroupsByPriority, isGroupHidden, PACKAGEKIT_GROUPS } from './groups';
+import { isGroupHidden, PACKAGEKIT_GROUPS } from './groups';
 
 interface GroupListProps {
     onGroupSelect: (groupId: string) => void;
@@ -55,7 +54,8 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                 installedCount: 0,
             }));
 
-            const sorted = sortGroupsByPriority(initialGroups);
+            // Sort alphabetically by name
+            const sorted = initialGroups.sort((a, b) => a.name.localeCompare(b.name));
             setGroups(sorted);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load package groups');
@@ -122,7 +122,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                     </EmptyStateBody>
                 </EmptyState>
             ) : (
-                <Gallery hasGutter minWidths={{ default: '250px' }}>
+                <div className="group-gallery-vertical">
                     {filteredGroups.map(group => (
                         <Card
                             key={group.id}
@@ -137,7 +137,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                             </CardBody>
                         </Card>
                     ))}
-                </Gallery>
+                </div>
             )}
         </div>
     );
