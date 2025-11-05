@@ -10,8 +10,8 @@ if (!process.env.TEST_COCKPIT_URL) {
 }
 
 export default defineConfig({
-  testDir: '.',
-  testMatch: '**/*frontend*.spec.ts',
+  testDir: './test',
+  testMatch: '**/*.spec.ts',
   timeout: 60000,
   fullyParallel: false,
   forbidOnly: false,
