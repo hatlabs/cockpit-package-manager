@@ -2,22 +2,23 @@
  * GroupList component - Browse packages by PackageKit group
  */
 
-import React, { useState, useEffect } from 'react';
 import {
     Card,
     CardBody,
+    CardHeader,
     CardTitle,
-    SearchInput,
-    Spinner,
     EmptyState,
     EmptyStateBody,
+    SearchInput,
+    Spinner,
     Title,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import React, { useEffect, useState } from 'react';
 
+import { isGroupHidden, PACKAGEKIT_GROUPS } from './groups';
 import * as PK from './packagekit';
 import { GroupInfo } from './types';
-import { isGroupHidden, PACKAGEKIT_GROUPS } from './groups';
 
 interface GroupListProps {
     onGroupSelect: (groupId: string) => void;
@@ -103,7 +104,7 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
 
     return (
         <div className="group-list">
-            <div className="pf-v6-u-mb-md">
+            <div className="pf-v6-u-mb-lg">
                 <SearchInput
                     placeholder="Search groups..."
                     value={searchQuery}
@@ -127,14 +128,18 @@ export const GroupList: React.FC<GroupListProps> = ({ onGroupSelect }) => {
                         <Card
                             key={group.id}
                             isClickable
-                            isSelectable
-                            onClick={() => onGroupSelect(group.id)}
+                            variant="secondary"
                             className="group-card"
                         >
-                            <CardTitle>{group.name}</CardTitle>
-                            <CardBody>
-                                <p>{group.description}</p>
-                            </CardBody>
+                            <CardHeader
+                                selectableActions={{
+                                    onClickAction: () => onGroupSelect(group.id),
+                                    selectableActionAriaLabelledby: `group-card-title-${group.id}`
+                                }}
+                            >
+                                <CardTitle id={`group-card-title-${group.id}`}><strong>{group.name}</strong></CardTitle>
+                            </CardHeader>
+                            <CardBody>{group.description}</CardBody>
                         </Card>
                     ))}
                 </div>

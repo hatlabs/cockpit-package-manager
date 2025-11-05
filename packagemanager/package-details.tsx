@@ -2,24 +2,22 @@
  * PackageDetails component - Detailed package information
  */
 
-import React, { useState, useEffect } from 'react';
 import {
-    Button,
-    Spinner,
+    Badge,
     Breadcrumb,
     BreadcrumbItem,
-    Badge,
-    DescriptionList,
-    DescriptionListGroup,
-    DescriptionListTerm,
-    DescriptionListDescription,
-    Progress,
-    ProgressSize,
+    Button,
     EmptyState,
     EmptyStateBody,
-    Title,
+    Flex,
+    FlexItem,
+    Progress,
+    ProgressSize,
+    Spinner,
+    Title
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import React, { useEffect, useState } from 'react';
 
 // Cockpit is loaded as a global via script tag
 declare const cockpit: any;
@@ -39,10 +37,10 @@ function usePageLocation() {
     return location;
 }
 
+import { getGroupInfo } from './groups';
 import * as PK from './packagekit';
 import { PackageDetails as PackageDetailsType, ProgressData } from './types';
-import { formatSize, getStatusLabel, getStatusVariant, getPackageName, getErrorMessage } from './utils';
-import { getGroupInfo } from './groups';
+import { formatSize, getErrorMessage, getPackageName, getStatusLabel } from './utils';
 
 interface PackageDetailsProps {
     packageId: string;
@@ -190,50 +188,57 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
     const groupInfo = getGroupInfo(pkg.group || 'unknown');
 
     return (
-        <div className="package-details">
-            <Breadcrumb className="pf-v6-u-mb-md">
-                <BreadcrumbItem to="#/">
-                    Groups
-                </BreadcrumbItem>
-                {groupId && (
-                    <BreadcrumbItem to={`#/group/${groupId}`}>
-                        {getGroupInfo(groupId).name}
+        <Flex className="package-details" direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsMd' }}>
+            <FlexItem>
+                <Breadcrumb className="pf-v6-u-mb-md">
+                    <BreadcrumbItem to="#/">
+                        Groups
                     </BreadcrumbItem>
-                )}
-                <BreadcrumbItem isActive>{pkg.name}</BreadcrumbItem>
-            </Breadcrumb>
+                    {groupId && (
+                        <BreadcrumbItem to={`#/group/${groupId}`}>
+                            {getGroupInfo(groupId).name}
+                        </BreadcrumbItem>
+                    )}
+                    <BreadcrumbItem isActive>{pkg.name}</BreadcrumbItem>
+                </Breadcrumb>
+            </FlexItem>
 
-            <div className="pf-v6-u-display-flex pf-v6-u-justify-content-space-between pf-v6-u-align-items-center pf-v6-u-mb-md">
-                <div>
-                    <h1>{pkg.name}</h1>
-                    <p className="pf-v6-u-color-200">{pkg.summary}</p>
-                </div>
-                <div>
-                    <Badge>
-                        {getStatusLabel(pkg.installed)}
-                    </Badge>
-                </div>
-            </div>
+            <FlexItem>
+                <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }} alignItems={{ default: 'alignItemsCenter' }}>
+                    <FlexItem flex={{ default: 'flex_1' }}>
+                        <Title headingLevel="h1" size="2xl">{pkg.name}</Title>
+                        <p className="pf-v6-u-color-200">{pkg.summary}</p>
+                    </FlexItem>
+                    <FlexItem>
+                        <Badge>
+                            {getStatusLabel(pkg.installed)}
+                        </Badge>
+                    </FlexItem>
+                </Flex>
+            </FlexItem>
 
             {error && (
-                <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
-                    <div className="pf-v6-c-alert__icon">
-                        <ExclamationCircleIcon />
+                <FlexItem>
+                    <div className="pf-v6-c-alert pf-m-danger">
+                        <div className="pf-v6-c-alert__icon">
+                            <ExclamationCircleIcon />
+                        </div>
+                        <p className="pf-v6-c-alert__title">{error}</p>
                     </div>
-                    <p className="pf-v6-c-alert__title">{error}</p>
-                </div>
+                </FlexItem>
             )}
 
             {operating && progress && (
-                <Progress
-                    value={progress.percentage}
-                    title={progress.waiting ? 'Waiting for package manager...' : 'Processing...'}
-                    size={ProgressSize.lg}
-                    className="pf-v6-u-mb-md"
-                />
+                <FlexItem>
+                    <Progress
+                        value={progress.percentage}
+                        title={progress.waiting ? 'Waiting for package manager...' : 'Processing...'}
+                        size={ProgressSize.lg}
+                    />
+                </FlexItem>
             )}
 
-            <div className="pf-v6-u-mb-lg">
+            <FlexItem>
                 {pkg.installed ? (
                     <Button
                         variant="danger"
@@ -253,58 +258,102 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                         Install Package
                     </Button>
                 )}
-            </div>
+            </FlexItem>
 
-            <DescriptionList>
-                <DescriptionListGroup>
-                    <DescriptionListTerm>Version</DescriptionListTerm>
-                    <DescriptionListDescription>{pkg.version}</DescriptionListDescription>
-                </DescriptionListGroup>
+            <FlexItem>
+                <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>
+                        <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <strong>Version:</strong>
+                            </FlexItem>
+                            <FlexItem flex={{ default: 'flex_2' }}>
+                                {pkg.version}
+                            </FlexItem>
+                        </Flex>
+                    </FlexItem>
 
-                <DescriptionListGroup>
-                    <DescriptionListTerm>Architecture</DescriptionListTerm>
-                    <DescriptionListDescription>{pkg.arch}</DescriptionListDescription>
-                </DescriptionListGroup>
+                    <FlexItem>
+                        <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <strong>Architecture:</strong>
+                            </FlexItem>
+                            <FlexItem flex={{ default: 'flex_2' }}>
+                                {pkg.arch}
+                            </FlexItem>
+                        </Flex>
+                    </FlexItem>
 
-                <DescriptionListGroup>
-                    <DescriptionListTerm>Group</DescriptionListTerm>
-                    <DescriptionListDescription>{groupInfo.name}</DescriptionListDescription>
-                </DescriptionListGroup>
+                    <FlexItem>
+                        <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                            <FlexItem flex={{ default: 'flex_1' }}>
+                                <strong>Group:</strong>
+                            </FlexItem>
+                            <FlexItem flex={{ default: 'flex_2' }}>
+                                {groupInfo.name}
+                            </FlexItem>
+                        </Flex>
+                    </FlexItem>
 
-                {pkg.size !== undefined && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Size</DescriptionListTerm>
-                        <DescriptionListDescription>{formatSize(pkg.size)}</DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
+                    {pkg.size !== undefined && (
+                        <FlexItem>
+                            <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                                <FlexItem flex={{ default: 'flex_1' }}>
+                                    <strong>Size:</strong>
+                                </FlexItem>
+                                <FlexItem flex={{ default: 'flex_2' }}>
+                                    {formatSize(pkg.size)}
+                                </FlexItem>
+                            </Flex>
+                        </FlexItem>
+                    )}
 
-                {pkg.license && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>License</DescriptionListTerm>
-                        <DescriptionListDescription>{pkg.license}</DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
+                    {pkg.license && (
+                        <FlexItem>
+                            <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                                <FlexItem flex={{ default: 'flex_1' }}>
+                                    <strong>License:</strong>
+                                </FlexItem>
+                                <FlexItem flex={{ default: 'flex_2' }}>
+                                    {pkg.license}
+                                </FlexItem>
+                            </Flex>
+                        </FlexItem>
+                    )}
+                </Flex>
+            </FlexItem>
 
-                {pkg.url && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Homepage</DescriptionListTerm>
-                        <DescriptionListDescription>
+            {pkg.url && (
+                <FlexItem>
+                    <Flex alignItems={{ default: 'alignItemsCenter' }}>
+                        <FlexItem flex={{ default: 'flex_1' }}>
+                            <strong>Homepage:</strong>
+                        </FlexItem>
+                        <FlexItem flex={{ default: 'flex_2' }}>
                             <a href={pkg.url} target="_blank" rel="noopener noreferrer">{pkg.url}</a>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
+                        </FlexItem>
+                    </Flex>
+                </FlexItem>
+            )}
 
-                <DescriptionListGroup>
-                    <DescriptionListTerm>Description</DescriptionListTerm>
-                    <DescriptionListDescription>
+            <FlexItem>
+                <Flex direction={{ default: 'column' }}>
+                    <FlexItem>
+                        <strong>Description:</strong>
+                    </FlexItem>
+                    <FlexItem>
                         <p>{pkg.description || pkg.summary}</p>
-                    </DescriptionListDescription>
-                </DescriptionListGroup>
+                    </FlexItem>
+                </Flex>
+            </FlexItem>
 
-                {dependencies.length > 0 && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Dependencies ({dependencies.length})</DescriptionListTerm>
-                        <DescriptionListDescription>
+            {dependencies.length > 0 && (
+                <FlexItem>
+                    <Flex direction={{ default: 'column' }}>
+                        <FlexItem>
+                            <strong>Dependencies ({dependencies.length}):</strong>
+                        </FlexItem>
+                        <FlexItem>
                             <ul className="pf-v6-c-list">
                                 {dependencies.slice(0, 10).map(dep => (
                                     <li key={dep}>{getPackageName(dep)}</li>
@@ -313,14 +362,18 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                                     <li>... and {dependencies.length - 10} more</li>
                                 )}
                             </ul>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
+                        </FlexItem>
+                    </Flex>
+                </FlexItem>
+            )}
 
-                {reverseDeps.length > 0 && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Required by ({reverseDeps.length})</DescriptionListTerm>
-                        <DescriptionListDescription>
+            {reverseDeps.length > 0 && (
+                <FlexItem>
+                    <Flex direction={{ default: 'column' }}>
+                        <FlexItem>
+                            <strong>Required by ({reverseDeps.length}):</strong>
+                        </FlexItem>
+                        <FlexItem>
                             <ul className="pf-v6-c-list">
                                 {reverseDeps.slice(0, 10).map(dep => (
                                     <li key={dep}>{getPackageName(dep)}</li>
@@ -329,14 +382,18 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                                     <li>... and {reverseDeps.length - 10} more</li>
                                 )}
                             </ul>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
+                        </FlexItem>
+                    </Flex>
+                </FlexItem>
+            )}
 
-                {files.length > 0 && (
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Installed Files ({files.length})</DescriptionListTerm>
-                        <DescriptionListDescription>
+            {files.length > 0 && (
+                <FlexItem>
+                    <Flex direction={{ default: 'column' }}>
+                        <FlexItem>
+                            <strong>Installed Files ({files.length}):</strong>
+                        </FlexItem>
+                        <FlexItem>
                             <details>
                                 <summary>Show file list</summary>
                                 <ul className="pf-v6-c-list pf-v6-u-font-size-sm">
@@ -345,10 +402,10 @@ export const PackageDetails: React.FC<PackageDetailsProps> = ({ packageId, onBac
                                     ))}
                                 </ul>
                             </details>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                )}
-            </DescriptionList>
-        </div>
+                        </FlexItem>
+                    </Flex>
+                </FlexItem>
+            )}
+        </Flex>
     );
 };

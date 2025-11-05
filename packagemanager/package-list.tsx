@@ -2,28 +2,37 @@
  * PackageList component - Display packages in a group
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { List, ListImperativeAPI } from 'react-window';
 import {
-    Button,
-    SearchInput,
-    Spinner,
-    EmptyState,
-    EmptyStateBody,
     Badge,
     Breadcrumb,
     BreadcrumbItem,
-    Title,
+    Button,
+    EmptyState,
+    EmptyStateBody,
+    Flex,
+    FlexItem,
     Progress,
     ProgressVariant,
+    SearchInput,
+    Spinner,
+    Title,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import {
+    Table,
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
+} from '@patternfly/react-table';
+import React, { useEffect, useState } from 'react';
 
-import * as PK from './packagekit';
-import { PackageDetails, ProgressData } from './types';
-import { filterPackages, sortPackagesByName, getStatusLabel, getStatusVariant, getErrorMessage } from './utils';
 import { getGroupInfo } from './groups';
+import * as PK from './packagekit';
 import { usePackageCache } from './packagemanager';
+import { PackageDetails, ProgressData } from './types';
+import { filterPackages, getErrorMessage, sortPackagesByName } from './utils';
 
 interface PackageListProps {
     groupId: string;
@@ -39,7 +48,6 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
     const [searchQuery, setSearchQuery] = useState('');
     const [operatingOn, setOperatingOn] = useState<string | null>(null);
     const [progress, setProgress] = useState<number>(0);
-    const listRef = useRef<ListImperativeAPI>(null);
 
     const groupInfo = getGroupInfo(groupId);
     const { cache: packageCache, setCache } = usePackageCache();
@@ -132,84 +140,6 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
 
     const filteredPackages = filterPackages(packages, searchQuery);
 
-    // Define row props type (only the custom props)
-    type RowPropsType = {
-        packages: PackageDetails[];
-        operatingPackage: string | null;
-        packageProgress: number;
-    };
-
-    // Row renderer for virtual list (receives index, style, ariaAttributes from List + our custom props)
-    const Row = (props: {
-        index: number;
-        style: React.CSSProperties;
-        ariaAttributes: { "aria-posinset": number; "aria-setsize": number; role: "listitem" };
-    } & RowPropsType) => {
-        const { index, ariaAttributes, packages, operatingPackage, packageProgress } = props;
-        const pkg = packages[index];
-        const isOperating = operatingPackage === pkg.id;
-
-        return (
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: '2fr 3fr 1fr 1.5fr',
-                    gap: '1rem',
-                    padding: '0.75rem 1rem',
-                    borderBottom: '1px solid var(--pf-v6-global--BorderColor--100)',
-                    alignItems: 'center',
-                    backgroundColor: index % 2 === 0 ? 'var(--pf-v6-global--BackgroundColor--100)' : 'transparent',
-                    height: '50px',
-                }}
-                {...props.ariaAttributes}
-            >
-                <div>
-                    <Button
-                        variant="link"
-                        isInline
-                        onClick={() => onPackageSelect(pkg.id)}
-                        style={{ padding: 0, fontSize: 'inherit' }}
-                    >
-                        {pkg.name}
-                    </Button>
-                </div>
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {pkg.summary}
-                </div>
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {pkg.version}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    {isOperating ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Spinner size="sm" /> {packageProgress}%
-                        </div>
-                    ) : pkg.installed ? (
-                        <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleRemove(pkg)}
-                            isDisabled={operatingOn !== null}
-                            style={{ width: '80px' }}
-                        >
-                            Remove
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleInstall(pkg)}
-                            isDisabled={operatingOn !== null}
-                            style={{ width: '80px' }}
-                        >
-                            Install
-                        </Button>
-                    )}
-                </div>
-            </div>
-        );
-    };
-
     if (loading) {
         return (
             <div className="pf-v6-u-text-align-center pf-v6-u-p-xl">
@@ -230,95 +160,122 @@ export const PackageList: React.FC<PackageListProps> = ({ groupId, onBack, onPac
 
     return (
         <div className="package-list">
-            <Breadcrumb className="pf-v6-u-mb-md">
-                <BreadcrumbItem to="#/">
-                    Groups
-                </BreadcrumbItem>
-                <BreadcrumbItem isActive>{groupInfo.name}</BreadcrumbItem>
-            </Breadcrumb>
-
-            {error && (
-                <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
-                    <div className="pf-v6-c-alert__icon">
-                        <ExclamationCircleIcon />
+            <Flex className="package-list-header" direction={{ default: 'column' }} >
+                <Breadcrumb className="pf-v6-u-mb-md">
+                    <BreadcrumbItem to="#/">
+                        Groups
+                    </BreadcrumbItem>
+                    <BreadcrumbItem isActive>{groupInfo.name}</BreadcrumbItem>
+                </Breadcrumb>
+                {error && (
+                    <div className="pf-v6-c-alert pf-m-danger pf-v6-u-mb-md">
+                        <div className="pf-v6-c-alert__icon">
+                            <ExclamationCircleIcon />
+                        </div>
+                        <p className="pf-v6-c-alert__title">{error}</p>
                     </div>
-                    <p className="pf-v6-c-alert__title">{error}</p>
-                </div>
-            )}
+                )}
+                <Flex>
+                    <Flex flex={{ default: 'flex_1' }} >
+                    <FlexItem>
+                        <Title headingLevel="h1" size="2xl" className="pf-v6-u-mb-sm">{groupInfo.name}</Title>
+                        <p>{groupInfo.description}</p>
+                    </FlexItem>
+                    </Flex>
+                    <Flex>
+                        <FlexItem>
+                            <SearchInput
+                                placeholder="Search packages..."
+                                value={searchQuery}
+                                onChange={(_, value) => setSearchQuery(value)}
+                                onClear={() => setSearchQuery('')}
+                            />
+                        </FlexItem>
+                    </Flex>
+                </Flex>
+            </Flex>
 
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: '2fr 3fr 1fr 1.5fr',
-                    gap: '1rem',
-                    padding: '0 1rem',
-                    marginBottom: '1rem',
-                    alignItems: 'start',
-                }}
-            >
-                <div style={{ gridColumn: '1 / 4' }}>
-                    <Title headingLevel="h1" size="2xl" className="pf-v6-u-mb-sm">{groupInfo.name}</Title>
-                    <p>{groupInfo.description}</p>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <SearchInput
-                        placeholder="Search packages..."
-                        value={searchQuery}
-                        onChange={(_, value) => setSearchQuery(value)}
-                        onClear={() => setSearchQuery('')}
-                    />
-                </div>
-            </div>
-
-            {filteredPackages.length === 0 ? (
-                <EmptyState>
-                    <Title headingLevel="h2" size="lg">No packages found</Title>
-                    <EmptyStateBody>
-                        {searchQuery
-                            ? `No packages match "${searchQuery}"`
-                            : `No packages in ${groupInfo.name}`}
-                    </EmptyStateBody>
-                </EmptyState>
-            ) : (
-                <div>
-                    {/* Package count badge */}
-                    <div style={{ padding: '0.5rem 1rem', marginBottom: '0.5rem' }}>
-                        <Badge>{filteredPackages.length} packages</Badge>
-                    </div>
-
-                    {/* Table header */}
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: '2fr 3fr 1fr 1.5fr',
-                            gap: '1rem',
-                            padding: '0.75rem 1rem',
-                            fontWeight: 'bold',
-                            borderBottom: '2px solid var(--pf-v6-global--BorderColor--100)',
-                            backgroundColor: 'var(--pf-v6-global--BackgroundColor--200)',
-                        }}
-                    >
-                        <div>Name</div>
-                        <div>Summary</div>
-                        <div>Version</div>
-                        <div style={{ textAlign: 'right' }}>Actions</div>
-                    </div>
-
-                    {/* Virtual scrolling list */}
-                    <List<RowPropsType>
-                        listRef={listRef}
-                        defaultHeight={600}
-                        rowCount={filteredPackages.length}
-                        rowHeight={50}
-                        rowComponent={Row}
-                        rowProps={{
-                            packages: filteredPackages,
-                            operatingPackage: operatingOn,
-                            packageProgress: progress,
-                        }}
-                    />
-                </div>
-            )}
+            <Flex className="package-list-content" direction={{ default: 'column' }} flex={{ default: 'flex_1' }}>
+                <FlexItem>
+                    {filteredPackages.length === 0 ? (
+                        <EmptyState>
+                            <Title headingLevel="h2" size="lg">No packages found</Title>
+                            <EmptyStateBody>
+                                {searchQuery
+                                    ? `No packages match "${searchQuery}"`
+                                    : `No packages in ${groupInfo.name}`}
+                            </EmptyStateBody>
+                        </EmptyState>
+                    ) : (
+                        <div>
+                            {/* Package count badge */}
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <Badge>{filteredPackages.length} packages</Badge>
+                            </div>
+                            {/* PatternFly Table */}
+                            <Table aria-label="Package list" variant="compact">
+                                <Thead>
+                                    <Tr>
+                                        <Th width={25}>Name</Th>
+                                        <Th width={40}>Summary</Th>
+                                        <Th width={10}>Version</Th>
+                                        <Th width={10} modifier="fitContent"></Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    {filteredPackages.map((pkg, index) => {
+                                        const isOperating = operatingOn === pkg.id;
+                                        return (
+                                            <Tr key={pkg.id}>
+                                                <Td>
+                                                    <Button
+                                                        variant="link"
+                                                        isInline
+                                                        onClick={() => onPackageSelect(pkg.id)}
+                                                    >
+                                                        {pkg.name}
+                                                    </Button>
+                                                </Td>
+                                                <Td modifier="truncate">
+                                                    {pkg.summary}
+                                                </Td>
+                                                <Td modifier="truncate">
+                                                    {pkg.version}
+                                                </Td>
+                                                <Td modifier="fitContent">
+                                                    {isOperating ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <Spinner size="sm" /> {progress}%
+                                                        </div>
+                                                    ) : pkg.installed ? (
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            onClick={() => handleRemove(pkg)}
+                                                            isDisabled={operatingOn !== null}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="primary"
+                                                            size="sm"
+                                                            onClick={() => handleInstall(pkg)}
+                                                            isDisabled={operatingOn !== null}
+                                                        >
+                                                            Install
+                                                        </Button>
+                                                    )}
+                                                </Td>
+                                            </Tr>
+                                        );
+                                    })}
+                                </Tbody>
+                            </Table>
+                        </div>
+                    )}
+                </FlexItem>
+            </Flex>
         </div>
     );
 };
