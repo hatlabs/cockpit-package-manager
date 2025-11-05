@@ -144,6 +144,14 @@ function release:prepare {
 
   echo "🚀 Preparing $bump_type release..."
 
+  # Check for clean working directory
+  if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "❌ Error: Working directory has uncommitted changes"
+    echo "Please commit or stash changes before preparing a release"
+    git status --short
+    return 1
+  fi
+
   # Bump version
   case $bump_type in
     patch)
@@ -174,7 +182,14 @@ function release:prepare {
   echo "Next steps:"
   echo "  1. Push branch: git push origin <branch-name>"
   echo "  2. Create and merge PR"
-  echo "  3. Tag and push: git tag v$new_version && git push --tags"
+  echo "  3. Create annotated tag and push:"
+  echo "     # Check if tag exists"
+  echo "     if git rev-parse \"v$new_version\" >/dev/null 2>&1; then"
+  echo "       echo \"Tag v$new_version already exists\""
+  echo "     else"
+  echo "       git tag -a v$new_version -m \"Release v$new_version\""
+  echo "       git push origin v$new_version"
+  echo "     fi"
   echo "  4. Create GitHub release from the tag"
 }
 
